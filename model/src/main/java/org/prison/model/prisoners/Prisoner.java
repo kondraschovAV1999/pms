@@ -1,10 +1,17 @@
-package org.prison.model;
+package org.prison.model.prisoners;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
+import org.prison.model.staffs.Department;
+import org.prison.model.staffs.Staff;
+import org.prison.model.utils.DangerLevel;
+import org.prison.model.utils.MarriageStatus;
+import org.prison.model.utils.PrisonerStatus;
+import org.prison.model.edu.Enrollment;
+import org.prison.model.edu.PrisonerDegree;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -14,30 +21,29 @@ import java.util.Objects;
 @Setter
 @Getter
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
 @Entity
-@Table(name = "PRISONER")
 public class Prisoner {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer prisonerId;
-
-    @Column(name = "Fname", nullable = false)
-    private String fName;
-
-    @Column(name = "Lname", nullable = false)
-    private String lName;
+    private Integer id;
 
     @Column(nullable = false)
+    private String fname;
+
+    @Column(nullable = false)
+    private String lname;
+
+    @Column( nullable = false)
     private LocalDate dob;
     @Column(nullable = false)
     private String idNumber;
     @Column(nullable = false)
     private String idType;
-
     private String address;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "Marriage")
     private MarriageStatus marriage;
 
     @Enumerated(EnumType.STRING)
@@ -47,7 +53,6 @@ public class Prisoner {
     private String crimeType;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "Status")
     private PrisonerStatus status;
 
     private String edLevel;
@@ -55,40 +60,66 @@ public class Prisoner {
     @Column(nullable = false)
     private String term;
 
-    @ManyToOne
-    @JoinColumn(name = "StaffId", referencedColumnName = "StaffId")
+    @JsonBackReference
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "staff_id", referencedColumnName = "id")
     private Staff respStaff;
 
     @ManyToOne
-    @JoinColumn(name = "WorkId", referencedColumnName = "ID")
+    @JoinColumn(name = "work_id", referencedColumnName = "id")
     private Work work;
 
-    @ManyToOne
-    @JoinColumn(name = "DeptId", referencedColumnName = "ID")
+    @JsonBackReference
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "dept_id", referencedColumnName = "id")
     private Department dept;
 
     @Column(nullable = false)
     private LocalDate relDate;
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "prisoner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PrisonerDegree> degrees = new ArrayList<>();
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "prisoner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Enrollment> courses = new ArrayList<>();
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "prisoner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Communication> communications = new ArrayList<>();
 
-    public enum MarriageStatus {
-        SINGLE, DIVORCED, MARRIED, WIDOWED
+    /* Managing degrees bidirectional relationship */
+    public void addDegree(PrisonerDegree prisonerDegree) {
+        degrees.add(prisonerDegree);
+        prisonerDegree.getDegree().getPrisoners().add(prisonerDegree);
     }
 
-    public enum DangerLevel {
-        A, B, C, D, E
+    public void removeDegree(PrisonerDegree prisonerDegree) {
+        degrees.remove(prisonerDegree);
+        prisonerDegree.getDegree().getPrisoners().remove(prisonerDegree);
     }
 
-    public enum PrisonerStatus {
-        IMPRISONED, RELEASED
+    /* Managing courses bidirectional relationship */
+    public void addCourse(Enrollment enrollment) {
+        courses.add(enrollment);
+        enrollment.getCourse().getPrisoners().add(enrollment);
+    }
+
+    public void removeCourse(Enrollment enrollment) {
+        courses.remove(enrollment);
+        enrollment.getCourse().getPrisoners().remove(enrollment);
+    }
+
+    /* Managing communications bidirectional relationship */
+    public void addCommunication(Communication communication) {
+        communications.add(communication);
+        communication.setPrisoner(this);
+    }
+
+    public void removeCommunication(Communication communication) {
+        communications.remove(communication);
+        communication.setPrisoner(null);
     }
 
     @Override
@@ -99,7 +130,7 @@ public class Prisoner {
         Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
         if (thisEffectiveClass != oEffectiveClass) return false;
         Prisoner other = (Prisoner) o;
-        return getPrisonerId() != null && Objects.equals(getPrisonerId(), other.getPrisonerId());
+        return getId() != null && Objects.equals(getId(), other.getId());
     }
 
     @Override

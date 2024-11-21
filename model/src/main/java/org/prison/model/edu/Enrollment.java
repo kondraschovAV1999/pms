@@ -1,9 +1,10 @@
-package org.prison.model;
+package org.prison.model.edu;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.prison.model.prisoners.Prisoner;
+import org.prison.model.utils.Status;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -12,8 +13,9 @@ import java.util.Objects;
 @Setter
 @Getter
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
 @Entity
-@Table(name = "ENROLLMENT")
 public class Enrollment {
 
     @EmbeddedId
@@ -21,10 +23,12 @@ public class Enrollment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("prisonerId")
+    @JsonBackReference
     private Prisoner prisoner;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("courseId")
+    @JsonBackReference
     private Course course;
 
     @Enumerated(EnumType.STRING)
@@ -33,6 +37,12 @@ public class Enrollment {
     private Float grade;
 
     private LocalDate date;
+
+    public Enrollment(Prisoner prisoner, Course course) {
+        this.prisoner = prisoner;
+        this.course = course;
+        this.id = new EnrollmentId(prisoner.getId(), course.getId());
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -56,7 +66,10 @@ public class Enrollment {
     @NoArgsConstructor
     @Embeddable
     public static class EnrollmentId implements Serializable {
+        @Column(name = "prisoner_id")
         private Integer prisonerId;
+
+        @Column(name = "course_id")
         private Integer courseId;
 
         public EnrollmentId(Integer prisonerId, Integer courseId) {

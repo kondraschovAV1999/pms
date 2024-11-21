@@ -1,25 +1,40 @@
-package org.prison.model;
+package org.prison.model.staffs;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Setter
 @Getter
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
 @Entity
-@Table(name = "PERMISSION")
-public class Permission {
+public class Duty {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(nullable = false)
-    private String permission;
+    private Boolean isDayTime;
+
+    @Column(nullable = false)
+    private LocalDate date;
+
+    @JsonBackReference
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "dept_id", referencedColumnName = "id")
+    private Department department;
+
+    @JsonBackReference
+    @ManyToMany(mappedBy = "duties")
+    private List<Staff> staffs = new ArrayList<>();
 
     @Override
     public final boolean equals(Object o) {
@@ -28,9 +43,10 @@ public class Permission {
         Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
         Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
         if (thisEffectiveClass != oEffectiveClass) return false;
-        Permission other = (Permission) o;
+        Duty other = (Duty) o;
         return getId() != null && Objects.equals(getId(), other.getId());
     }
+
     @Override
     public final int hashCode() {
         return this instanceof HibernateProxy
