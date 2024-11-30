@@ -7,11 +7,11 @@ import org.prison.model.utils.DangerLevel;
 import org.prison.model.utils.MarriageStatus;
 import org.prison.model.utils.PrisonerStatus;
 import org.prison.model.utils.Stat;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.awt.print.Pageable;
 import java.util.List;
 
 public interface PrisonerRepository extends JpaRepository<Prisoner, Integer> {
@@ -41,50 +41,56 @@ public interface PrisonerRepository extends JpaRepository<Prisoner, Integer> {
     @Query(
             value = "SELECT TIMESTAMPDIFF(YEAR,p.dob,CURDATE()) AS age, COUNT(p.dob) AS count " +
                     "FROM prisoner AS p " +
+                    "WHERE TIMESTAMPDIFF(YEAR, p.dob, CURDATE()) BETWEEN ?1 AND ?2 " +
                     "GROUP BY age",
             nativeQuery = true
     )
-    List<Stat<Integer, Integer>> statisticsByAge();
+    List<Stat<Integer, Integer>> statisticsByAge(int ageStart, int ageEnd);
 
     @Query(
             value = "SELECT p.crime_type, COUNT(p.crime_type) AS count " +
                     "FROM prisoner AS p " +
+                    "WHERE p.crime_type = ?1 " +
                     "GROUP BY p.crime_type",
             nativeQuery = true
     )
-    List<Stat<String, Integer>> statisticsByCrimeType();
+    List<Stat<String, Integer>> statisticsByCrimeType(String crimeType);
 
     @Query(
             value = "SELECT p.marriage, COUNT(p.marriage) AS count " +
                     "FROM prisoner AS p " +
+                    "WHERE p.marriage = ?1 " +
                     "GROUP BY p.marriage",
             nativeQuery = true
     )
-    List<Stat<MarriageStatus, Integer>> statisticsByMarriage();
+    List<Stat<MarriageStatus, Integer>> statisticsByMarriage(String marriageStatus);
 
     @Query(
             value = "SELECT p.ed_level, COUNT(p.ed_level) AS count " +
                     "FROM prisoner AS p " +
+                    "WHERE p.ed_level = ?1 " +
                     "GROUP BY p.ed_level",
             nativeQuery = true
     )
-    List<Stat<String, Integer>> statisticsByEdLevel();
+    List<Stat<String, Integer>> statisticsByEdLevel(String edLevel);
 
     @Query(
             value = "SELECT d.name, COUNT(p.dept_id) " +
                     "FROM prisoner AS p INNER JOIN prison.department AS d ON p.dept_id = d.id " +
+                    "WHERE d.name = ?1 " +
                     "GROUP BY d.name",
             nativeQuery = true
     )
-    List<Stat<String, Integer>> statisticsByDistrict();
+    List<Stat<String, Integer>> statisticsByDistrict(String dName);
 
     @Query(
             value = "SELECT p.d_level, COUNT(p.d_level) AS count " +
                     "FROM prisoner AS p " +
+                    "WHERE p.d_level = ?1 " +
                     "GROUP BY p.d_level",
             nativeQuery = true
     )
-    List<Stat<DangerLevel, Integer>> statisticsByDLevel();
+    List<Stat<DangerLevel, Integer>> statisticsByDLevel(String dangerLevel);
 
     Slice<Prisoner> findAllByDept(Department dept, Pageable pageable);
 
@@ -108,5 +114,7 @@ public interface PrisonerRepository extends JpaRepository<Prisoner, Integer> {
     Slice<Prisoner> findAllByStatusContaining(PrisonerStatus status, Pageable pageable);
 
     Slice<Prisoner> findAllByDlevelContaining(String dLevel, Pageable pageable);
+
+    Slice<Prisoner> findAllPrisoners(Pageable pageable);
 
 }
