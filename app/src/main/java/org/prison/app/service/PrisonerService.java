@@ -2,11 +2,10 @@ package org.prison.app.service;
 
 import org.prison.model.edu.Course;
 import org.prison.model.edu.Degree;
+import org.prison.model.edu.Enrollment;
+import org.prison.model.edu.PrisonerDegree;
 import org.prison.model.prisoners.Communication;
 import org.prison.model.prisoners.Prisoner;
-import org.prison.model.staffs.Department;
-import org.prison.model.staffs.Staff;
-import org.prison.model.utils.PrisonerStatus;
 import org.prison.model.utils.StatisticsReq;
 import org.prison.model.utils.StatisticsResp;
 
@@ -19,22 +18,24 @@ public interface PrisonerService {
     List<Prisoner> findAllPrisoners(int page, int size);
     StatisticsResp getStatistics(StatisticsReq statReq);
     List<Prisoner> findPrisonersByKeyword(String keyword, String filter, int page, int size);
+    Prisoner editPrisoner(int id, Prisoner prisoner);
     List<Course> findAllCourses(int id);
     List<Degree> findAllDegrees(int id);
     Course findCourseById(int prisonerId, int courseId);
-    void addCourse(int prisonerId, Course course);
-    void deleteCourse(int prisonerId, int courseId);
+    Course findCourseByEnrl(Prisoner prisoner, Enrollment enrollment);
+    Enrollment addCourse(int prisonerId, Course course);
+    Prisoner deleteCourse(int prisonerId, int courseId);
     Degree findDegreeById(int prisonerId, int degreeId);
-    void addDegree(int prisonerId, Degree degree);
-    void deleteDegree(int prisonerId, int degreeId);
+    PrisonerDegree addDegree(int prisonerId, Degree degree);
+    Prisoner deleteDegree(int prisonerId, int degreeId);
+    Degree findDegreeByPD(Prisoner prisoner, PrisonerDegree prisonerDegree);
     List<Prisoner> findReleasePrisoners(int page, int size);
-    List<Prisoner> findAllImprisonedPrisoners(int page, int size);
-    List<Prisoner> findAllByStatus(PrisonerStatus status, int page, int size);
-    List<Prisoner> findAllByDept(Department dept, int page, int size);
-    List<Prisoner> findAllByRespStaff(Staff staff, int page, int size);
+    List<Prisoner> findAllByStatus(String status, int page, int size);
+    List<Prisoner> findAllByDept(int deptId, int page, int size);
+    List<Prisoner> findAllByRespStaff(int staffId, int page, int size);
     List<Communication> findAllCommunications(int id);
     Communication findCommunicationById(int commId);
-    void addCommunication(int id, Communication communication);
-    void deleteCommunication(int commId);
-
+    Communication addCommunication(int id, Communication communication);
+    Prisoner deleteCommunication(int prisonerId, int commId);
+    int numberPrisoners();
 }

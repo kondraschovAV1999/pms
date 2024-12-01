@@ -1,8 +1,6 @@
 package org.prison.repositories;
 
 import org.prison.model.prisoners.Prisoner;
-import org.prison.model.staffs.Department;
-import org.prison.model.staffs.Staff;
 import org.prison.model.utils.DangerLevel;
 import org.prison.model.utils.MarriageStatus;
 import org.prison.model.utils.PrisonerStatus;
@@ -28,13 +26,6 @@ public interface PrisonerRepository extends JpaRepository<Prisoner, Integer> {
             nativeQuery = true
     )
     Slice<Prisoner> findReleasePrisoners(Pageable pageable);
-
-    @Query(
-            value = "SELECT * FROM prisoner AS p " +
-                    "WHERE p.status = 'IMPRISONED'",
-            nativeQuery = true
-    )
-    Slice<Prisoner> findAllImprisonedPrisoners(Pageable pageable);
 
     Slice<Prisoner> findAllByStatus(PrisonerStatus status, Pageable pageable);
 
@@ -92,9 +83,9 @@ public interface PrisonerRepository extends JpaRepository<Prisoner, Integer> {
     )
     List<Stat<DangerLevel, Integer>> statisticsByDLevel(String dangerLevel);
 
-    Slice<Prisoner> findAllByDept(Department dept, Pageable pageable);
+    Slice<Prisoner> findAllByDeptId(int deptId, Pageable pageable);
 
-    Slice<Prisoner> findAllByRespStaff(Staff staff, Pageable pageable);
+    Slice<Prisoner> findAllByRespStaffId(int staffId, Pageable pageable);
 
     @Query(
             value = "SELECT * FROM prisoner AS p WHERE " +
