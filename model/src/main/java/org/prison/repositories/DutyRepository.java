@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public interface DutyRepository extends JpaRepository<Duty, Integer> {
 
@@ -19,4 +20,6 @@ public interface DutyRepository extends JpaRepository<Duty, Integer> {
             nativeQuery = true
     )
     Slice<Duty> findAllByStaffId(int staffId, Pageable pageable);
+
+    List<Duty> findAllByDate(LocalDate date);
 }

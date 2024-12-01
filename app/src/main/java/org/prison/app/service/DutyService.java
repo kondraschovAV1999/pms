@@ -1,4 +1,15 @@
 package org.prison.app.service;
 
+import org.prison.model.staffs.Duty;
+import org.prison.model.utils.ValidationResp;
+
+import java.time.LocalDate;
+import java.util.List;
+
 public interface DutyService {
+    List<Duty> getDutyList(LocalDate date, int page, int size);
+    ValidationResp validateDutyList(LocalDate date);
+    Duty saveDuty(Duty duty);
+    void deleteDuty(int id);
+    Duty findById(int id);
 }
