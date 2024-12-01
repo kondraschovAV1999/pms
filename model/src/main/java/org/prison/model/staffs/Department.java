@@ -50,6 +50,21 @@ public class Department {
     @OneToMany(mappedBy = "dept")
     private List<Staff> staff = new ArrayList<>();
 
+    /* Managing workList bidirectional relationship */
+    public void addWork(Work work) {
+        if (!workList.contains(work)) {
+            workList.add(work);
+            work.setDepartment(this);
+        }
+    }
+
+    public void removeWork(Work work) {
+        if (workList.contains(work)) {
+            workList.remove(work);
+            work.setDepartment(null);
+        }
+    }
+
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;
