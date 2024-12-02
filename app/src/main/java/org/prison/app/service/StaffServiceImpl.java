@@ -14,6 +14,7 @@ import org.prison.repositories.StaffRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -68,13 +69,18 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public void createAssignment(int id, Assignment assignment) {
-        findById(id).getAssignments().add(assignment);
+    public Pair<Staff, Assignment> createAssignment(int id, Assignment assignment) {
+        Staff staff = findById(id);
+        staff.getAssignments().add(assignment);
+        assignmentRepository.save(assignment);
+        return Pair.of(staff, assignment);
     }
 
     @Override
-    public void deleteAssignment(int id, Assignment assignment) {
-        findById(id).getAssignments().remove(assignment);
+    public Staff deleteAssignment(int id, Assignment assignment) {
+        Staff staff = findById(id);
+        staff.getAssignments().remove(assignment);
+        return staff;
     }
 
     @Override
@@ -94,13 +100,18 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public void createAssessment(int id, Assessment assessment) {
-        findById(id).addAssessment(assessment);
+    public Pair<Staff, Assessment> createAssessment(int id, Assessment assessment) {
+        Staff staff = findById(id);
+        staff.addAssessment(assessment);
+        assessmentRepository.save(assessment);
+        return Pair.of(staff, assessment);
     }
 
     @Override
-    public void deleteAssessment(int id, Assessment assessment) {
-        findById(id).removeAssessment(assessment);
+    public Staff deleteAssessment(int id, Assessment assessment) {
+        Staff staff = findById(id);
+        staff.removeAssessment(assessment);
+        return staff;
     }
 
     @Override
@@ -117,22 +128,37 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public void assignSupervisor(int id, Staff supervisor) {
-        supervisor.addSupervisee(findById(id));
+    public Staff assignSupervisor(int id, int supervisorId) {
+        Staff supervisor = findById(supervisorId);
+        Staff staff = findById(id);
+        supervisor.addSupervisee(staff);
+        staff.setMaster(supervisor);
+        return staff;
     }
 
     @Override
-    public void deleteSupervisor(int id, Staff supervisor) {
-        supervisor.removeSupervisee(findById(id));
+    public Staff deleteSupervisor(int id) {
+        Staff supervisor = findSupervisor(id);
+        Staff staff = findById(id);
+        if (supervisor != null) {
+            supervisor.removeSupervisee(staff);
+        }
+        return staff;
     }
 
     @Override
-    public void addSupervisee(int id, Staff staff) {
-        findById(id).addSupervisee(staff);
+    public Staff addSupervisee(int id, int  staffId) {
+        Staff staff = findById(id);
+        Staff supervisee = findById(staffId);
+        staff.addSupervisee(supervisee);
+        return staff;
     }
 
     @Override
-    public void deleteSupervisee(int id, Staff staff) {
-        findById(id).removeSupervisee(staff);
+    public Staff deleteSupervisee(int id, int  staffId) {
+        Staff staff = findById(id);
+        Staff supervisee = findById(staffId);
+        staff.removeSupervisee(supervisee);
+        return staff;
     }
 }
