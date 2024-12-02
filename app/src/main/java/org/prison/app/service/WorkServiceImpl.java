@@ -29,12 +29,16 @@ public class WorkServiceImpl implements WorkService {
 
     @Override
     public void assignWork(int deptId, Work work) {
-        findDepartmentById(deptId).addWork(work);
+        Department department = findDepartmentById(deptId);
+        department.addWork(work);
+        departmentRepository.save(department);
     }
 
     @Override
     public void removeFromDept(int deptId, int workId) {
-        findDepartmentById(deptId).removeWork(findById(workId));
+        Department department = findDepartmentById(deptId);
+        department.removeWork(findById(workId));
+        departmentRepository.save(department);
     }
 
     @Override
