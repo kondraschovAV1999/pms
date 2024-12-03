@@ -2,10 +2,10 @@ package org.prison.app.controllers;
 
 import lombok.AllArgsConstructor;
 import org.prison.app.service.StaffService;
-import org.prison.model.staffs.Assessment;
-import org.prison.model.staffs.Assignment;
-import org.prison.model.staffs.Duty;
-import org.prison.model.staffs.Staff;
+import org.prison.model.data.staffs.Assessment;
+import org.prison.model.data.staffs.Assignment;
+import org.prison.model.data.staffs.Duty;
+import org.prison.model.data.staffs.Staff;
 import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -60,10 +60,10 @@ public class StaffController {
                 .orElse(null);
     }
 
-    @DeleteMapping("/{id}/assignments")
+    @DeleteMapping("/{id}/assignments/{assignmentId}")
     public void deleteAssignment(@PathVariable int id,
-                                 @RequestBody Assignment assignment) {
-        staffService.save(staffService.deleteAssignment(id, assignment));
+                                 @PathVariable int assignmentId) {
+        staffService.save(staffService.deleteAssignment(id, assignmentId));
     }
 
     @GetMapping("/{id}/assessments")
@@ -89,8 +89,8 @@ public class StaffController {
     @DeleteMapping("/{id}/assessments")
     public void deleteAssessment(
             @PathVariable int id,
-            @RequestBody Assessment assessment) {
-        staffService.save(staffService.deleteAssessment(id, assessment));
+            @PathVariable int assessmentId) {
+        staffService.save(staffService.deleteAssessment(id, assessmentId));
     }
 
     @GetMapping("/{id}/supervisor")

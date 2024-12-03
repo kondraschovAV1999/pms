@@ -2,8 +2,8 @@ package org.prison.app.controllers;
 
 import lombok.AllArgsConstructor;
 import org.prison.app.service.DutyService;
-import org.prison.model.staffs.Duty;
-import org.prison.model.utils.ValidationResp;
+import org.prison.model.data.staffs.Duty;
+import org.prison.model.data.utils.ValidationResp;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;

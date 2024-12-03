@@ -1,7 +1,7 @@
 package org.prison.app.service;
 
 
-import org.prison.model.prisoners.Work;
+import org.prison.model.data.prisoners.Work;
 
 import java.util.List;
 

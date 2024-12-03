@@ -1,13 +1,14 @@
 package org.prison.app.service;
 
-import org.prison.model.edu.Course;
-import org.prison.model.edu.Degree;
-import org.prison.model.edu.Enrollment;
-import org.prison.model.edu.PrisonerDegree;
-import org.prison.model.prisoners.Communication;
-import org.prison.model.prisoners.Prisoner;
-import org.prison.model.utils.StatisticsReq;
-import org.prison.model.utils.StatisticsResp;
+
+import org.prison.model.data.edu.Course;
+import org.prison.model.data.edu.Degree;
+import org.prison.model.data.edu.Enrollment;
+import org.prison.model.data.edu.PrisonerDegree;
+import org.prison.model.data.prisoners.Communication;
+import org.prison.model.data.prisoners.Prisoner;
+import org.prison.model.data.utils.StatisticsReq;
+import org.prison.model.data.utils.StatisticsResp;
 
 import java.util.List;
 

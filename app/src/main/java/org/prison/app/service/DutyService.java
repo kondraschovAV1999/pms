@@ -1,10 +1,12 @@
 package org.prison.app.service;
 
-import org.prison.model.staffs.Duty;
-import org.prison.model.utils.ValidationResp;
+
+import org.prison.model.data.staffs.Duty;
+import org.prison.model.data.utils.ValidationResp;
 
 import java.time.LocalDate;
 import java.util.List;
+
 
 public interface DutyService {
     List<Duty> getDutyList(LocalDate date, int page, int size);

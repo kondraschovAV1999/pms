@@ -2,7 +2,7 @@ package org.prison.app.controllers;
 
 import lombok.AllArgsConstructor;
 import org.prison.app.service.WorkService;
-import org.prison.model.prisoners.Work;
+import org.prison.model.data.prisoners.Work;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,23 +25,23 @@ public class WorkController {
         workService.removeFromDept(deptId, workId);
     }
 
-    @GetMapping
+    @GetMapping("works/list")
     public List<Work> findAll(@RequestParam(defaultValue = "0") int page,
                               @RequestParam(defaultValue = "10") int size) {
         return workService.findAll(page, size);
     }
 
-    @GetMapping("/duties/{id}")
+    @GetMapping("/works/{id}")
     public Work findById(@PathVariable int id) {
         return workService.findById(id);
     }
 
-    @DeleteMapping("/duties/{id}")
+    @DeleteMapping("/works/{id}")
     public void deleteById(@PathVariable int id) {
         workService.deleteById(id);
     }
 
-    @PostMapping("/duties")
+    @PostMapping("/works")
     @ResponseStatus(value = HttpStatus.CREATED)
     public Work save(@RequestBody Work work) {
         return workService.save(work);

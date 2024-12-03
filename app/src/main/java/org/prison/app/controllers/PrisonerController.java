@@ -2,14 +2,14 @@ package org.prison.app.controllers;
 
 import lombok.AllArgsConstructor;
 import org.prison.app.service.PrisonerService;
-import org.prison.model.edu.Course;
-import org.prison.model.edu.Degree;
-import org.prison.model.edu.Enrollment;
-import org.prison.model.edu.PrisonerDegree;
-import org.prison.model.prisoners.Communication;
-import org.prison.model.prisoners.Prisoner;
-import org.prison.model.utils.StatisticsReq;
-import org.prison.model.utils.StatisticsResp;
+import org.prison.model.data.edu.Course;
+import org.prison.model.data.edu.Degree;
+import org.prison.model.data.edu.Enrollment;
+import org.prison.model.data.edu.PrisonerDegree;
+import org.prison.model.data.prisoners.Communication;
+import org.prison.model.data.prisoners.Prisoner;
+import org.prison.model.data.utils.StatisticsReq;
+import org.prison.model.data.utils.StatisticsResp;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,7 +22,7 @@ public class PrisonerController {
 
     private final PrisonerService prisonerService;
 
-    @GetMapping("prisoners")
+    @GetMapping("prisoners/statistics")
     public StatisticsResp getStatistics(@RequestBody StatisticsReq req) {
         return prisonerService.getStatistics(req);
     }
@@ -130,13 +130,6 @@ public class PrisonerController {
     public List<Prisoner> getPrisonersRelease7d(@RequestParam int page,
                                                 @RequestParam int size) {
         return prisonerService.findReleasePrisoners(page, size);
-    }
-
-    @GetMapping("prisoners")
-    public List<Prisoner> getPrisonersByStatus(@RequestParam String status,
-                                               @RequestParam int page,
-                                               @RequestParam int size) {
-        return prisonerService.findAllByStatus(status, page, size);
     }
 
     @GetMapping("department/{id}/prisoners")

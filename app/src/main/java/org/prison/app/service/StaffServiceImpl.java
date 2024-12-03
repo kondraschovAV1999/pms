@@ -3,14 +3,14 @@ package org.prison.app.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.prison.app.exceptions.NotFoundException;
-import org.prison.model.staffs.Assessment;
-import org.prison.model.staffs.Assignment;
-import org.prison.model.staffs.Duty;
-import org.prison.model.staffs.Staff;
-import org.prison.repositories.AssessmentRepository;
-import org.prison.repositories.AssignmentRepository;
-import org.prison.repositories.DutyRepository;
-import org.prison.repositories.StaffRepository;
+import org.prison.model.data.staffs.Assessment;
+import org.prison.model.data.staffs.Assignment;
+import org.prison.model.data.staffs.Duty;
+import org.prison.model.data.staffs.Staff;
+import org.prison.model.repositories.AssessmentRepository;
+import org.prison.model.repositories.AssignmentRepository;
+import org.prison.model.repositories.DutyRepository;
+import org.prison.model.repositories.StaffRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -31,6 +31,9 @@ public class StaffServiceImpl implements StaffService {
     private final DutyRepository dutyRepository;
 
     private static final String STAFF_NOT_FOUND = "Staff with id=%d Not Found";
+    private static final String ASSIGNMENT_NOT_FOUND = "Assignment with id=%d Not Found";
+    private static final String ASSESSMENT_NOT_FOUND = "Assessment with id=%d Not Found";
+
 
     @Override
     public Staff findById(int id) {
@@ -77,9 +80,9 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public Staff deleteAssignment(int id, Assignment assignment) {
+    public Staff deleteAssignment(int id, int assignmentId) {
         Staff staff = findById(id);
-        staff.getAssignments().remove(assignment);
+        staff.getAssignments().remove(findAssignmentById(assignmentId));
         return staff;
     }
 
@@ -108,9 +111,9 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public Staff deleteAssessment(int id, Assessment assessment) {
+    public Staff deleteAssessment(int id, int assessmentId) {
         Staff staff = findById(id);
-        staff.removeAssessment(assessment);
+        staff.removeAssessment(findAssessmentById(assessmentId));
         return staff;
     }
 
@@ -147,7 +150,7 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public Staff addSupervisee(int id, int  staffId) {
+    public Staff addSupervisee(int id, int staffId) {
         Staff staff = findById(id);
         Staff supervisee = findById(staffId);
         staff.addSupervisee(supervisee);
@@ -155,10 +158,28 @@ public class StaffServiceImpl implements StaffService {
     }
 
     @Override
-    public Staff deleteSupervisee(int id, int  staffId) {
+    public Staff deleteSupervisee(int id, int staffId) {
         Staff staff = findById(id);
         Staff supervisee = findById(staffId);
         staff.removeSupervisee(supervisee);
         return staff;
+    }
+
+    private Assignment findAssignmentById(int id) {
+        return assignmentRepository.findById(id)
+                .orElseThrow(() -> {
+                    String message = ASSIGNMENT_NOT_FOUND.formatted(id);
+                    log.error(message);
+                    return new NotFoundException(message);
+                });
+    }
+
+    private Assessment findAssessmentById(int id) {
+        return assessmentRepository.findById(id)
+                .orElseThrow(() -> {
+                    String message = ASSESSMENT_NOT_FOUND.formatted(id);
+                    log.error(message);
+                    return new NotFoundException(message);
+                });
     }
 }

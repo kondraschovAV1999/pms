@@ -5,17 +5,17 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.prison.app.exceptions.NotFoundException;
-import org.prison.model.edu.Course;
-import org.prison.model.edu.Degree;
-import org.prison.model.edu.Enrollment;
-import org.prison.model.edu.PrisonerDegree;
-import org.prison.model.prisoners.Communication;
-import org.prison.model.prisoners.Prisoner;
-import org.prison.model.utils.PrisonerStatus;
-import org.prison.model.utils.Stat;
-import org.prison.model.utils.StatisticsReq;
-import org.prison.model.utils.StatisticsResp;
-import org.prison.repositories.*;
+import org.prison.model.data.edu.Course;
+import org.prison.model.data.edu.Degree;
+import org.prison.model.data.edu.Enrollment;
+import org.prison.model.data.edu.PrisonerDegree;
+import org.prison.model.data.prisoners.Communication;
+import org.prison.model.data.prisoners.Prisoner;
+import org.prison.model.data.utils.PrisonerStatus;
+import org.prison.model.data.utils.StatisticsReq;
+import org.prison.model.data.utils.StatisticsResp;
+import org.prison.model.repositories.*;
+import  org.prison.model.data.utils.Stat;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -147,7 +147,7 @@ public class PrisonerServiceImpl implements PrisonerService {
                     throw new NotFoundException(message);
                 }
             }
-            case "dLevel" -> prisonerRepository.findAllByDlevelContaining(keyword.toLowerCase(), pageable);
+            case "dLevel" -> prisonerRepository.findAllByDLevelContaining(keyword.toLowerCase(), pageable);
             case "name" -> prisonerRepository.findAllByName(keyword.toLowerCase(), pageable);
             default -> throw new NotFoundException("Invalid filter");
         };

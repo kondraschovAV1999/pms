@@ -148,9 +148,21 @@ ALTER TABLE staff
 ADD CONSTRAINT fk_master 
 FOREIGN KEY (master_id) REFERENCES staff(id);
 
+ALTER TABLE staff
+ADD CONSTRAINT fk_staff_dept
+FOREIGN KEY (dept_id) REFERENCES department(id) ON DELETE CASCADE;
+
 ALTER TABLE assignment 
 ADD CONSTRAINT fk_assignment_dept 
 FOREIGN KEY (dept_id) REFERENCES department(id);
+
+ALTER TABLE work
+ADD CONSTRAINT fk_work_dept
+FOREIGN KEY (dept_id) REFERENCES department(id);
+
+ALTER TABLE communication
+ADD CONSTRAINT fk_communication_prisoner
+FOREIGN KEY (prisoner_id) REFERENCES prisoner(id);
 
 ALTER TABLE staff_duties 
 ADD CONSTRAINT fk_staff_duties_staff
