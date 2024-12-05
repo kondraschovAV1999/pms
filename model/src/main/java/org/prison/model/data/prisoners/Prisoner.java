@@ -1,14 +1,14 @@
 package org.prison.model.data.prisoners;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
 import org.prison.model.data.edu.Enrollment;
 import org.prison.model.data.edu.PrisonerDegree;
-import org.prison.model.data.staffs.Department;
-import org.prison.model.data.staffs.Staff;
 import org.prison.model.data.utils.DangerLevel;
 import org.prison.model.data.utils.MarriageStatus;
 import org.prison.model.data.utils.PrisonerStatus;
@@ -35,7 +35,7 @@ public class Prisoner {
     @Column(nullable = false)
     private String lname;
 
-    @Column( nullable = false)
+    @Column(nullable = false)
     private LocalDate dob;
     @Column(nullable = false)
     private String idNumber;
@@ -60,33 +60,23 @@ public class Prisoner {
     @Column(nullable = false)
     private String term;
 
-    @JsonBackReference
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "staff_id", referencedColumnName = "id")
-    private Staff respStaff;
-
     @ManyToOne
     @JoinColumn(name = "work_id", referencedColumnName = "id")
     private Work work;
 
-    @JsonBackReference
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dept_id", referencedColumnName = "id")
-    private Department dept;
-
     @Column(nullable = false)
     private LocalDate relDate;
 
-    @JsonManagedReference
+    @JsonManagedReference(value = "prisoner-degrees")
     @OneToMany(mappedBy = "prisoner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PrisonerDegree> degrees = new ArrayList<>();
 
-    @JsonManagedReference
+    @JsonManagedReference(value = "prisoner-courses")
     @OneToMany(mappedBy = "prisoner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Enrollment> courses = new ArrayList<>();
 
-    @JsonManagedReference
-    @OneToMany(mappedBy = "prisoner", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany
+    @JoinColumn(name = "prisoner_id")
     private List<Communication> communications = new ArrayList<>();
 
     /* Managing degrees bidirectional relationship */
@@ -111,16 +101,6 @@ public class Prisoner {
         enrollment.getCourse().getPrisoners().remove(enrollment);
     }
 
-    /* Managing communications bidirectional relationship */
-    public void addCommunication(Communication communication) {
-        communications.add(communication);
-        communication.setPrisoner(this);
-    }
-
-    public void removeCommunication(Communication communication) {
-        communications.remove(communication);
-        communication.setPrisoner(null);
-    }
 
     @Override
     public final boolean equals(Object o) {

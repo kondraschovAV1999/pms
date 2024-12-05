@@ -23,12 +23,12 @@ public class Enrollment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("prisonerId")
-    @JsonBackReference
+    @JsonBackReference(value = "prisoner-courses")
     private Prisoner prisoner;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("courseId")
-    @JsonBackReference
+    @JsonBackReference(value = "enrollment")
     private Course course;
 
     @Enumerated(EnumType.STRING)

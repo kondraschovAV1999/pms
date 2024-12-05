@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,20 +29,22 @@ public class WorkServiceImpl implements WorkService {
     private static final String DEPT_NOT_FOUND = "Dept with id=%d Not Found";
 
     @Override
-    public void assignWork(int deptId, Work work) {
-        Department department = findDepartmentById(deptId);
-        department.addWork(work);
-        departmentRepository.save(department);
+    @Transactional
+    public void assignWork(int deptId, int id) {
+        existenceCheck(id, deptId);
+        workRepository.assignWorkToDepartment(deptId, id);
     }
 
     @Override
     public void removeFromDept(int deptId, int workId) {
-        Department department = findDepartmentById(deptId);
-        department.removeWork(findById(workId));
-        departmentRepository.save(department);
+        existenceCheck(deptId, workId);
+        workRepository.removeWorkFromDepartment(deptId,
+                findById(workId).getId());
     }
 
+
     @Override
+    @Transactional
     public List<Work> findAll(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Slice<Work> slice = workRepository.findWorkList(pageable);
@@ -77,4 +80,19 @@ public class WorkServiceImpl implements WorkService {
     public Work save(Work work) {
         return workRepository.save(work);
     }
+
+    private void existenceCheck(int deptId, int workId) {
+        if (!workRepository.existsById(workId)) {
+            String message = WORK_NOT_FOUND.formatted(workId);
+            log.error(message);
+            throw new NotFoundException(message);
+        }
+
+        if (!departmentRepository.existsById(deptId)) {
+            String message = DEPT_NOT_FOUND.formatted(deptId);
+            log.error(message);
+            throw new NotFoundException(message);
+        }
+    }
+
 }

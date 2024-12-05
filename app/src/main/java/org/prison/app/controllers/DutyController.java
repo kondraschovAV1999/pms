@@ -11,34 +11,35 @@ import java.util.List;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("/pms/api/duties")
+@RequestMapping
 public class DutyController {
 
     private final DutyService dutyService;
 
-    @GetMapping
+    @GetMapping("/duties")
     public List<Duty> getDutyList(@RequestParam LocalDate date,
                                   @RequestParam(defaultValue = "0") int page,
                                   @RequestParam(defaultValue = "10") int size) {
         return dutyService.getDutyList(date, page, size);
     }
 
-    @GetMapping("/validate")
+    @GetMapping("/duties/validate")
     public ValidationResp validateDutyList(@RequestParam LocalDate date) {
         return dutyService.validateDutyList(date);
     }
 
-    @PostMapping
-    public Duty saveDuty(@RequestBody Duty duty) {
-        return dutyService.saveDuty(duty);
+    @PostMapping("/departments/{deptId}/duties")
+    public Duty saveDuty(@PathVariable int deptId,
+                         @RequestBody Duty duty) {
+        return dutyService.saveDuty(deptId, duty);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/duties/{id}")
     public void deleteDuty(@PathVariable int id) {
         dutyService.deleteDuty(id);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/duties/{id}")
     public Duty findById(@PathVariable int id) {
         return dutyService.findById(id);
     }

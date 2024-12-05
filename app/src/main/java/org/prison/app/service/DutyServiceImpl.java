@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -45,6 +46,14 @@ public class DutyServiceImpl implements DutyService {
     @Override
     public Duty saveDuty(Duty duty) {
         return dutyRepository.save(duty);
+    }
+
+    @Override
+    @Transactional
+    public Duty saveDuty(int deptId, Duty duty) {
+        duty = dutyRepository.save(duty);
+        dutyRepository.assignDutyToDepartment(deptId, duty.getId());
+        return duty;
     }
 
     @Override

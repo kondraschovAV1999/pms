@@ -1,7 +1,10 @@
 package org.prison.model.data.staffs;
-import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.time.LocalDate;
@@ -20,11 +23,6 @@ public class Assessment {
 
     @Column(nullable = false)
     private Integer score;
-
-    @JsonBackReference
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="staff_id", referencedColumnName="id")
-    private Staff staff;
 
     @Column(nullable = false)
     private LocalDate date;

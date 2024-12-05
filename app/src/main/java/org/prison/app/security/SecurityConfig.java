@@ -17,8 +17,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable) // Disable CSRF (use with caution for APIs)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api-docs/**", "/swagger**, ", "/swagger-ui.html", "/swagger-ui/index.html").permitAll() // Allow Swagger
-                        .anyRequest().authenticated() // Secure all other endpoints
+//                        .requestMatchers("/api-docs/**", "/swagger**, ", "/swagger-ui.html", "/swagger-ui/index.html").permitAll() // Allow Swagger
+                        .anyRequest().permitAll() // Secure all other endpoints
                 );
 
         return http.build();

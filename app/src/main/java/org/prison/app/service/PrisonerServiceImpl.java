@@ -11,15 +11,13 @@ import org.prison.model.data.edu.Enrollment;
 import org.prison.model.data.edu.PrisonerDegree;
 import org.prison.model.data.prisoners.Communication;
 import org.prison.model.data.prisoners.Prisoner;
-import org.prison.model.data.utils.PrisonerStatus;
-import org.prison.model.data.utils.StatisticsReq;
-import org.prison.model.data.utils.StatisticsResp;
+import org.prison.model.data.utils.*;
 import org.prison.model.repositories.*;
-import  org.prison.model.data.utils.Stat;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,12 +34,8 @@ public class PrisonerServiceImpl implements PrisonerService {
     private final PrisonerDegreeRepository prisonerDegreeRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final CommunicationRepository communicationRepository;
-    private final CourseRepository courseRepository;
-    private final DegreeRepository degreeRepository;
 
-    private static final String DEGREE_NOT_FOUND = "Degree with prisoner_id=%d and degree_id=%d Not Found";
     private static final String PRISONER_NOT_FOUND = "Prisoner with id=%d Not Found";
-    private static final String COURSE_NOT_FOUND = "Course with prisoner_id=%d and course_id=%d Not Found";
     public static final String PRISONER_STATUS_NOT_FOUND = "Prisoner status with name=%s Not Found";
     public static final String COMMUNICATION_NOT_FOUND = "Communication with id=%d NOT FOUND";
     public static final String STATUS_NOT_FOUND = "Status with name=%s Not Found";
@@ -54,6 +48,14 @@ public class PrisonerServiceImpl implements PrisonerService {
                     return new NotFoundException(message);
                 }
         );
+    }
+
+    @Override
+    @Transactional
+    public Prisoner savePrisoner(int deptId, Prisoner prisoner) {
+        prisoner = prisonerRepository.save(prisoner);
+        prisonerRepository.assignPrisonerToDepartment(deptId, prisoner.getId());
+        return prisoner;
     }
 
     @Override
@@ -75,6 +77,7 @@ public class PrisonerServiceImpl implements PrisonerService {
     }
 
     @Override
+    @Transactional
     public StatisticsResp getStatistics(StatisticsReq statReq) {
         StatisticsResp statisticsResp = new StatisticsResp();
 
@@ -83,7 +86,8 @@ public class PrisonerServiceImpl implements PrisonerService {
             statisticsResp.setCrimeTypeStat(prisonerRepository
                     .statisticsByCrimeType(statReq.getCrimeType())
                     .stream()
-                    .collect(Collectors.toMap((Stat::getKey), Stat::getValue)));
+                    .collect(Collectors.toMap((StringProjection::getString),
+                            StringProjection::getCount)));
         }
 
         /* Age Stat */
@@ -92,7 +96,8 @@ public class PrisonerServiceImpl implements PrisonerService {
             statisticsResp.setAgeStat(prisonerRepository
                     .statisticsByAge(statReq.getAgeStart(), statReq.getAgeEnd())
                     .stream()
-                    .collect(Collectors.toMap((Stat::getKey), Stat::getValue)));
+                    .collect(Collectors.toMap((IntegerProjection::getAge),
+                            IntegerProjection::getCount)));
         }
 
         /* Danger Level Stat */
@@ -100,7 +105,8 @@ public class PrisonerServiceImpl implements PrisonerService {
             statisticsResp.setDLevelStat(prisonerRepository
                     .statisticsByDLevel(statReq.getDLevel())
                     .stream()
-                    .collect(Collectors.toMap((stat -> stat.getKey().toString()), Stat::getValue)));
+                    .collect(Collectors.toMap((StringProjection::getString),
+                            StringProjection::getCount)));
         }
 
         /* Marriage Status Stat */
@@ -108,7 +114,8 @@ public class PrisonerServiceImpl implements PrisonerService {
             statisticsResp.setMarriageStat(prisonerRepository
                     .statisticsByMarriage(statReq.getMarriage())
                     .stream()
-                    .collect(Collectors.toMap((stat -> stat.getKey().toString()), Stat::getValue)));
+                    .collect(Collectors.toMap((StringProjection::getString),
+                            StringProjection::getCount)));
         }
 
         /* Education Level Stat */
@@ -116,7 +123,8 @@ public class PrisonerServiceImpl implements PrisonerService {
             statisticsResp.setEdLevelStat(prisonerRepository
                     .statisticsByEdLevel(statReq.getEdLevel())
                     .stream()
-                    .collect(Collectors.toMap((Stat::getKey), Stat::getValue)));
+                    .collect(Collectors.toMap((StringProjection::getString),
+                            StringProjection::getCount)));
         }
 
         /* District Stat */
@@ -124,7 +132,8 @@ public class PrisonerServiceImpl implements PrisonerService {
             statisticsResp.setDistrictStat(prisonerRepository
                     .statisticsByDistrict(statReq.getDistrict())
                     .stream()
-                    .collect(Collectors.toMap((Stat::getKey), Stat::getValue)));
+                    .collect(Collectors.toMap((StringProjection::getString),
+                            StringProjection::getCount)));
         }
 
         return statisticsResp;
@@ -140,14 +149,14 @@ public class PrisonerServiceImpl implements PrisonerService {
             case "term" -> prisonerRepository.findAllByTermContaining(keyword.toLowerCase(), pageable);
             case "status" -> {
                 try {
-                    yield prisonerRepository.findAllByStatusContaining(PrisonerStatus.valueOf(keyword.toUpperCase()), pageable);
+                    yield prisonerRepository.findAllByStatus(PrisonerStatus.valueOf(keyword.toUpperCase()), pageable);
                 } catch (IllegalArgumentException e) {
                     String message = PRISONER_STATUS_NOT_FOUND.formatted(keyword);
                     log.error(message);
                     throw new NotFoundException(message);
                 }
             }
-            case "dLevel" -> prisonerRepository.findAllByDLevelContaining(keyword.toLowerCase(), pageable);
+            case "dLevel" -> prisonerRepository.findAllByDLevel(DangerLevel.valueOf(keyword.toUpperCase()), pageable);
             case "name" -> prisonerRepository.findAllByName(keyword.toLowerCase(), pageable);
             default -> throw new NotFoundException("Invalid filter");
         };
@@ -157,7 +166,8 @@ public class PrisonerServiceImpl implements PrisonerService {
     }
 
     @Override
-    public Prisoner editPrisoner(int id, Prisoner updatedPrisoner) {
+    @Transactional
+    public Prisoner editPrisoner(int id, int deptId, Prisoner updatedPrisoner) {
         Prisoner existingPrisoner = findById(id);
 
         if (updatedPrisoner.getFname() != null)
@@ -196,14 +206,8 @@ public class PrisonerServiceImpl implements PrisonerService {
         if (updatedPrisoner.getTerm() != null)
             existingPrisoner.setTerm(updatedPrisoner.getTerm());
 
-        if (updatedPrisoner.getRespStaff() != null)
-            existingPrisoner.setRespStaff(updatedPrisoner.getRespStaff());
-
         if (updatedPrisoner.getWork() != null)
             existingPrisoner.setWork(updatedPrisoner.getWork());
-
-        if (updatedPrisoner.getDept() != null)
-            existingPrisoner.setDept(updatedPrisoner.getDept());
 
         if (updatedPrisoner.getRelDate() != null)
             existingPrisoner.setRelDate(updatedPrisoner.getRelDate());
@@ -222,10 +226,12 @@ public class PrisonerServiceImpl implements PrisonerService {
             existingPrisoner.getCommunications().clear();
             existingPrisoner.getCommunications().addAll(updatedPrisoner.getCommunications());
         }
-        return updatedPrisoner;
+
+        return savePrisoner(deptId, updatedPrisoner);
     }
 
     @Override
+    @Transactional
     public List<Course> findAllCourses(int id) {
         return findById(id).getCourses()
                 .stream()
@@ -234,6 +240,7 @@ public class PrisonerServiceImpl implements PrisonerService {
     }
 
     @Override
+    @Transactional
     public List<Degree> findAllDegrees(int id) {
         return findById(id).getDegrees()
                 .stream()
@@ -241,101 +248,6 @@ public class PrisonerServiceImpl implements PrisonerService {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public Course findCourseById(int prisonerId, int courseId) {
-        return enrollmentRepository
-                .findById(new Enrollment.EnrollmentId(prisonerId, courseId))
-                .orElseThrow(() -> {
-                    String message = COURSE_NOT_FOUND.formatted(prisonerId, courseId);
-                    log.error(message);
-                    return new NotFoundException(message);
-                })
-                .getCourse();
-    }
-
-    @Override
-    public Course findCourseByEnrl(Prisoner prisoner, Enrollment enrollment) {
-        return prisoner.getCourses().stream()
-                .filter(e -> e.equals(enrollment))
-                .map(Enrollment::getCourse)
-                .findFirst().orElseThrow(() -> {
-                            String message = COURSE_NOT_FOUND.formatted(enrollment.getPrisoner().getId(),
-                                    enrollment.getCourse().getId());
-                            log.error(message);
-                            return new NotFoundException(message);
-                        }
-                );
-    }
-
-    @Override
-    public Enrollment addCourse(int prisonerId, Course course) {
-        Prisoner prisoner = findById(prisonerId);
-        course = courseRepository.save(course);
-        Enrollment enrollment = new Enrollment(prisoner, course);
-        prisoner.addCourse(enrollment);
-        return enrollment;
-    }
-
-    @Override
-    public Prisoner deleteCourse(int prisonerId, int courseId) {
-        Enrollment enrollment = enrollmentRepository
-                .findById(new Enrollment.EnrollmentId(prisonerId, courseId))
-                .orElseThrow(() -> {
-                    String message = COURSE_NOT_FOUND.formatted(prisonerId, courseId);
-                    log.error(message);
-                    return new NotFoundException(message);
-                });
-        enrollment.getPrisoner().removeCourse(enrollment);
-        return enrollment.getPrisoner();
-    }
-
-    @Override
-    public Degree findDegreeById(int prisonerId, int degreeId) {
-        return prisonerDegreeRepository
-                .findById(new PrisonerDegree.DegreeEnrollmentId(prisonerId, degreeId))
-                .orElseThrow(() -> {
-                    String message = DEGREE_NOT_FOUND.formatted(prisonerId, degreeId);
-                    log.error(message);
-                    return new NotFoundException(message);
-                })
-                .getDegree();
-    }
-
-    @Override
-    public PrisonerDegree addDegree(int prisonerId, Degree degree) {
-        Prisoner prisoner = findById(prisonerId);
-        PrisonerDegree prisonerDegree = new PrisonerDegree(prisoner, degree);
-        degreeRepository.save(degree);
-        prisoner.addDegree(prisonerDegree);
-        return prisonerDegree;
-    }
-
-    @Override
-    public Prisoner deleteDegree(int prisonerId, int degreeId) {
-        PrisonerDegree prisonerDegree = prisonerDegreeRepository
-                .findById(new PrisonerDegree.DegreeEnrollmentId(prisonerId, degreeId))
-                .orElseThrow(() -> {
-                    String message = DEGREE_NOT_FOUND.formatted(prisonerId, degreeId);
-                    log.error(message);
-                    return new NotFoundException(message);
-                });
-        prisonerDegree.getPrisoner().removeDegree(prisonerDegree);
-        return prisonerDegree.getPrisoner();
-    }
-
-    @Override
-    public Degree findDegreeByPD(Prisoner prisoner, PrisonerDegree prisonerDegree) {
-        return prisoner.getDegrees().stream()
-                .filter(pd -> pd.equals(prisonerDegree))
-                .map(PrisonerDegree::getDegree)
-                .findFirst().orElseThrow(() -> {
-                            String message = DEGREE_NOT_FOUND.formatted(prisonerDegree.getPrisoner().getId(),
-                                    prisonerDegree.getDegree().getId());
-                            log.error(message);
-                            return new NotFoundException(message);
-                        }
-                );
-    }
 
     @Override
     public List<Prisoner> findReleasePrisoners(int page, int size) {
@@ -392,13 +304,23 @@ public class PrisonerServiceImpl implements PrisonerService {
     }
 
     @Override
+    @Transactional
     public Communication addCommunication(int id, Communication communication) {
-        communication = communicationRepository.save(communication);
-        findById(id).addCommunication(communication);
-        return communication;
+        Communication savedCommunication = communicationRepository.save(communication);
+        Prisoner prisoner = findById(id);
+        prisoner.getCommunications().add(savedCommunication);
+        return savePrisoner(prisoner).getCommunications().stream()
+                .filter(c -> c.getId().equals(savedCommunication.getId()))
+                .findFirst()
+                .orElseThrow(() -> {
+                    String message = COMMUNICATION_NOT_FOUND.formatted(savedCommunication.getId());
+                    log.error(message);
+                    return new NotFoundException(message);
+                });
     }
 
     @Override
+    @Transactional
     public Prisoner deleteCommunication(int prisonerId, int commId) {
         Prisoner prisoner = findById(prisonerId);
         Communication communication = prisoner.getCommunications().stream()
@@ -409,8 +331,8 @@ public class PrisonerServiceImpl implements PrisonerService {
                     log.error(message);
                     return new NotFoundException(message);
                 });
-        prisoner.removeCommunication(communication);
-        return prisoner;
+        prisoner.getCommunications().remove((communication));
+        return savePrisoner(prisoner);
     }
 
     @Override

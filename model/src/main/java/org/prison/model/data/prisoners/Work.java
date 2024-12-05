@@ -1,12 +1,10 @@
 package org.prison.model.data.prisoners;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
-import org.prison.model.data.staffs.Department;
 
 import java.util.Objects;
 
@@ -21,11 +19,6 @@ public class Work {
 
     @Column(nullable = false)
     private String type;
-
-    @JsonBackReference
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="dept_id", referencedColumnName="id")
-    private Department department;
 
     @Override
     public final boolean equals(Object o) {

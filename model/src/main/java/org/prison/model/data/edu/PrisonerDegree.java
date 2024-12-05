@@ -23,12 +23,12 @@ public class PrisonerDegree {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("prisonerId")
-    @JsonBackReference
+    @JsonBackReference(value = "prisoner-degrees")
     private Prisoner prisoner;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("degreeId")
-    @JsonBackReference
+    @JsonBackReference(value = "prisonerDegree")
     private Degree degree;
 
     private LocalDate date;

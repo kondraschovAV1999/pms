@@ -1,15 +1,16 @@
 package org.prison.app.controllers;
 
 import lombok.AllArgsConstructor;
+import org.prison.app.service.CourseService;
+import org.prison.app.service.DegreeService;
 import org.prison.app.service.PrisonerService;
 import org.prison.model.data.edu.Course;
 import org.prison.model.data.edu.Degree;
-import org.prison.model.data.edu.Enrollment;
-import org.prison.model.data.edu.PrisonerDegree;
 import org.prison.model.data.prisoners.Communication;
 import org.prison.model.data.prisoners.Prisoner;
 import org.prison.model.data.utils.StatisticsReq;
 import org.prison.model.data.utils.StatisticsResp;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,10 +18,12 @@ import java.util.List;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("/pms/api")
+@RequestMapping
 public class PrisonerController {
 
     private final PrisonerService prisonerService;
+    private final CourseService courseService;
+    private final DegreeService degreeService;
 
     @GetMapping("prisoners/statistics")
     public StatisticsResp getStatistics(@RequestBody StatisticsReq req) {
@@ -30,8 +33,8 @@ public class PrisonerController {
     @GetMapping("prisoners")
     public List<Prisoner> getPrisonersByKeyword(@RequestParam String keyword,
                                                 @RequestParam String filter,
-                                                @RequestParam int page,
-                                                @RequestParam int size) {
+                                                @RequestParam(defaultValue = "0") int page,
+                                                @RequestParam(defaultValue = "0") int size) {
         return prisonerService.findPrisonersByKeyword(keyword, filter, page, size);
     }
 
@@ -41,14 +44,16 @@ public class PrisonerController {
     }
 
     @GetMapping("prisoners/list")
-    public List<Prisoner> getAllPrisoners(@RequestParam int page,
-                                          @RequestParam int size) {
+    public List<Prisoner> getAllPrisoners(@RequestParam(defaultValue = "0") int page,
+                                          @RequestParam(defaultValue = "0") int size) {
         return prisonerService.findAllPrisoners(page, size);
     }
 
-    @PostMapping("prisoners")
-    public Prisoner createPrisoner(@RequestBody Prisoner prisoner) {
-        return prisonerService.savePrisoner(prisoner);
+    @PostMapping("/departments/{deptId}/prisoners")
+    @ResponseStatus(value = HttpStatus.CREATED)
+    public Prisoner createPrisoner(@PathVariable int deptId,
+                                   @RequestBody Prisoner prisoner) {
+        return prisonerService.savePrisoner(deptId, prisoner);
     }
 
     @DeleteMapping("prisoners/{id}")
@@ -56,17 +61,11 @@ public class PrisonerController {
         prisonerService.deletePrisonerById(id);
     }
 
-    @PostMapping("prisoners/{id}")
-    public Prisoner editPrisoner(@RequestBody Prisoner prisoner, @PathVariable int id) {
-        return prisonerService.savePrisoner(
-                prisonerService.editPrisoner(id, prisoner)
-        );
-    }
-
-    @PutMapping("prisoners/{id}")
-    public Prisoner replacePrisoner(@RequestBody Prisoner prisoner, @PathVariable int id) {
-        prisoner.setId(id);
-        return prisonerService.savePrisoner(prisoner);
+    @PostMapping("/departments/{deptId}/prisoners/{id}")
+    public Prisoner editPrisoner(@PathVariable int deptId,
+                                 @RequestBody Prisoner prisoner,
+                                 @PathVariable int id) {
+        return prisonerService.editPrisoner(id, deptId, prisoner);
     }
 
     @GetMapping("prisoners/count")
@@ -82,22 +81,19 @@ public class PrisonerController {
     @GetMapping("prisoners/{prisonerId}/courses/{courseId}")
     public Course getCourseById(@PathVariable int prisonerId,
                                 @PathVariable int courseId) {
-        return prisonerService.findCourseById(prisonerId, courseId);
+        return courseService.findCourse(prisonerId, courseId);
     }
 
-    @PostMapping("prisoners/{prisonerId}/courses")
-    public Course addCourse(@PathVariable int prisonerId,
-                            @RequestBody Course course) {
-        Enrollment enrollment = prisonerService.addCourse(prisonerId, course);
-        Prisoner prisoner = prisonerService.savePrisoner(enrollment.getPrisoner());
-        return prisonerService.findCourseByEnrl(prisoner, enrollment);
+    @PostMapping("prisoners/{prisonerId}/courses/{courseId}")
+    public void addCourse(@PathVariable int prisonerId,
+                          @PathVariable int courseId) {
+        courseService.assignCourseToPrisoner(courseId, prisonerId);
     }
 
     @DeleteMapping("prisoners/{prisonerId}/courses/{courseId}")
     public void deleteCourse(@PathVariable int prisonerId,
                              @PathVariable int courseId) {
-        prisonerService.savePrisoner(
-                prisonerService.deleteCourse(prisonerId, courseId));
+        courseService.deleteCourseFromPrisoner(courseId, prisonerId);
     }
 
     @GetMapping("prisoners/{id}/degrees")
@@ -108,42 +104,32 @@ public class PrisonerController {
     @GetMapping("prisoners/{prisonerId}/degrees/{degreeId}")
     public Degree getDegreeById(@PathVariable int prisonerId,
                                 @PathVariable int degreeId) {
-        return prisonerService.findDegreeById(prisonerId, degreeId);
+        return degreeService.findDegree(prisonerId, degreeId);
     }
 
-    @PostMapping("prisoners/{prisonerId}/degrees")
-    public Degree addDegree(@PathVariable int prisonerId,
-                            @RequestBody Degree degree) {
-        PrisonerDegree prisonerDegree = prisonerService.addDegree(prisonerId, degree);
-        Prisoner prisoner = prisonerService.savePrisoner(prisonerDegree.getPrisoner());
-        return prisonerService.findDegreeByPD(prisoner, prisonerDegree);
+    @PostMapping("prisoners/{prisonerId}/degrees/{degreeId}")
+    public void addDegree(@PathVariable int prisonerId,
+                          @PathVariable int degreeId) {
+        degreeService.assignDegreeToPrisoner(degreeId, prisonerId);
     }
 
     @DeleteMapping("prisoners/{prisonerId}/degrees/{degreeId}")
     public void deleteDegree(@PathVariable int prisonerId,
                              @PathVariable int degreeId) {
-        prisonerService.savePrisoner(
-                prisonerService.deleteDegree(prisonerId, degreeId));
+        degreeService.deleteDegreeFromPrisoner(degreeId, prisonerId);
     }
 
     @GetMapping("prisoners/release7d")
-    public List<Prisoner> getPrisonersRelease7d(@RequestParam int page,
-                                                @RequestParam int size) {
+    public List<Prisoner> getPrisonersRelease7d(@RequestParam(defaultValue = "0") int page,
+                                                @RequestParam(defaultValue = "0") int size) {
         return prisonerService.findReleasePrisoners(page, size);
     }
 
-    @GetMapping("department/{id}/prisoners")
+    @GetMapping("departments/{id}/prisoners")
     public List<Prisoner> getPrisonersByDeptId(@PathVariable int id,
-                                               @RequestParam int page,
-                                               @RequestParam int size) {
+                                               @RequestParam(defaultValue = "0") int page,
+                                               @RequestParam(defaultValue = "0") int size) {
         return prisonerService.findAllByDept(id, page, size);
-    }
-
-    @GetMapping("staff/{id}/prisoners")
-    public List<Prisoner> getPrisonersByRespStaffId(@PathVariable int id,
-                                                    @RequestParam int page,
-                                                    @RequestParam int size) {
-        return prisonerService.findAllByRespStaff(id, page, size);
     }
 
     @GetMapping("prisoners/{id}/communication")
@@ -154,17 +140,12 @@ public class PrisonerController {
     @PostMapping("prisoners/{id}/communication")
     public Communication addCommunication(@PathVariable int id,
                                           @RequestBody Communication communication) {
-        Communication savedComm = prisonerService.addCommunication(id, communication);
-        return prisonerService.savePrisoner(savedComm.getPrisoner()).getCommunications()
-                .stream()
-                .filter(c -> c.getId().equals(savedComm.getId()))
-                .findFirst()
-                .orElse(null);
+        return prisonerService.addCommunication(id, communication);
     }
 
     @DeleteMapping("prisoners/{prisonerId}/communication/{commId}")
-    public void deleteCommunication(@PathVariable int prisonerId, @PathVariable int commId) {
-        prisonerService.savePrisoner(
-                prisonerService.deleteCommunication(prisonerId, commId));
+    public void deleteCommunication(@PathVariable int prisonerId,
+                                    @PathVariable int commId) {
+        prisonerService.deleteCommunication(prisonerId, commId);
     }
 }

@@ -1,9 +1,10 @@
 package org.prison.model.data.staffs;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
 import org.prison.model.data.prisoners.Prisoner;
 import org.prison.model.data.utils.Gender;
@@ -25,10 +26,10 @@ public class Staff {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column( nullable = false)
+    @Column(nullable = false)
     private String fname;
 
-    @Column( nullable = false)
+    @Column(nullable = false)
     private String lname;
 
     @Column(nullable = false)
@@ -46,41 +47,30 @@ public class Staff {
     @Enumerated(EnumType.STRING)
     private StaffLevel level;
 
-    @JsonBackReference
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dept_id", referencedColumnName = "id")
-    private Department dept;
-
-    @JsonManagedReference
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "staff_duties",
             joinColumns = @JoinColumn(name = "staff_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "duty_id", referencedColumnName = "id"))
     private List<Duty> duties = new ArrayList<>();
 
-    @JsonManagedReference
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "staff_assignments",
             joinColumns = @JoinColumn(name = "staff_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "assignment_id", referencedColumnName = "id"))
     private List<Assignment> assignments = new ArrayList<>();
 
-    @JsonBackReference
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="master_id", referencedColumnName="id")
-    private Staff master;
 
-    @JsonManagedReference
-    @OneToMany(mappedBy = "master")
-    private List<Staff> supervisee =  new ArrayList<>();
+    @OneToMany
+    @JoinColumn(name = "master_id")
+    private List<Staff> supervisee = new ArrayList<>();
 
-    @JsonManagedReference
-    @OneToMany(mappedBy = "staff", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Assessment> assessments =  new ArrayList<>();
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name ="staff_id")
+    private List<Assessment> assessments = new ArrayList<>();
 
-    @JsonManagedReference
-    @OneToMany(mappedBy = "respStaff", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Prisoner> prisoners =  new ArrayList<>();
+    @OneToMany
+    @JoinColumn(name ="staff_id")
+    private List<Prisoner> prisoners = new ArrayList<>();
 
     /* Managing duties bidirectional relationship */
     public void addDuty(Duty duty) {
@@ -94,51 +84,6 @@ public class Staff {
         if (duties.contains(duty)) {
             duties.remove(duty);
             duty.getStaffs().remove(this);
-        }
-    }
-
-    /* Managing supervisee bidirectional relationship */
-    public void addSupervisee(Staff superviseeStaff) {
-        if (!supervisee.contains(superviseeStaff)) {
-            supervisee.add(superviseeStaff);
-            superviseeStaff.setMaster(this);
-        }
-    }
-
-    public void removeSupervisee(Staff superviseeStaff) {
-        if (supervisee.contains(superviseeStaff)) {
-            supervisee.remove(superviseeStaff);
-            superviseeStaff.setMaster(null);
-        }
-    }
-
-    /* Managing assessments bidirectional relationship */
-    public void addAssessment(Assessment assessment) {
-        if (!assessments.contains(assessment)) {
-            assessments.add(assessment);
-            assessment.setStaff(this);
-        }
-    }
-
-    public void removeAssessment(Assessment assessment) {
-        if (assessments.contains(assessment)) {
-            assessments.remove(assessment);
-            assessment.setStaff(null);
-        }
-    }
-
-    /* Managing prisoners bidirectional relationship */
-    public void addPrisoner(Prisoner prisoner) {
-        if (!prisoners.contains(prisoner)) {
-            prisoners.add(prisoner);
-            prisoner.setRespStaff(this);
-        }
-    }
-
-    public void removePrisoner(Prisoner prisoner) {
-        if (prisoners.contains(prisoner)) {
-            prisoners.remove(prisoner);
-            prisoner.setRespStaff(null);
         }
     }
 

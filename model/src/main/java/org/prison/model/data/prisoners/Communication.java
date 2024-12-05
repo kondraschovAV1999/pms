@@ -1,8 +1,10 @@
 package org.prison.model.data.prisoners;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.time.LocalDateTime;
@@ -19,11 +21,6 @@ public class Communication {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
-    @JsonBackReference
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="prisoner_id", referencedColumnName="id")
-    private Prisoner prisoner;
 
     @Column(nullable = false)
     private LocalDateTime timestamp;

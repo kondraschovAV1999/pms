@@ -10,14 +10,15 @@ import java.util.List;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("/pms/api")
+@RequestMapping
 public class WorkController {
 
     private final WorkService workService;
 
-    @PostMapping("/departments/{deptId}")
-    public void assignWork(@PathVariable int deptId, @RequestBody Work work) {
-        workService.assignWork(deptId, work);
+    @PostMapping("/departments/{deptId}/works/{workId}")
+    @ResponseStatus(value = HttpStatus.CREATED)
+    public void assignWork(@PathVariable int deptId, @PathVariable int workId) {
+        workService.assignWork(deptId, workId);
     }
 
     @DeleteMapping("/departments/{deptId}/works/{workId}")

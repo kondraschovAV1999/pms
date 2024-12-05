@@ -25,11 +25,10 @@ public class Degree {
     private String field;
     private String level;
 
-    @JsonManagedReference
+    @JsonManagedReference(value = "prisonerDegree")
     @OneToMany(mappedBy = "degree", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PrisonerDegree> prisoners = new ArrayList<>();
 
-    @JsonManagedReference
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "degree_course",
             joinColumns = @JoinColumn(name = "degree_id", referencedColumnName = "id"),
@@ -52,15 +51,5 @@ public class Degree {
         return this instanceof HibernateProxy
                 ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode()
                 : getClass().hashCode();
-    }
-
-    public void addCourse(Course course) {
-        courses.add(course);
-        course.getDegrees().add(this);
-    }
-
-    public void removeCourse(Course course) {
-        courses.remove(course);
-        course.getDegrees().remove(this);
     }
 }

@@ -1,8 +1,11 @@
 package org.prison.model.data.staffs;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.time.LocalDate;
@@ -27,13 +30,8 @@ public class Duty {
     @Column(nullable = false)
     private LocalDate date;
 
-    @JsonBackReference
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dept_id", referencedColumnName = "id")
-    private Department department;
-
-    @JsonBackReference
-    @ManyToMany(mappedBy = "duties")
+    @JsonIgnore
+    @ManyToMany(mappedBy = "duties", cascade = CascadeType.ALL)
     private List<Staff> staffs = new ArrayList<>();
 
     @Override

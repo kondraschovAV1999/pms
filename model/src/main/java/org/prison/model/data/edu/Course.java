@@ -1,9 +1,11 @@
 package org.prison.model.data.edu;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.util.ArrayList;
@@ -26,13 +28,9 @@ public class Course {
 
     private String teacher;
 
-    @JsonManagedReference
+    @JsonManagedReference(value = "enrollment")
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Enrollment> prisoners = new ArrayList<>();
-
-    @JsonBackReference
-    @ManyToMany(mappedBy = "courses")
-    private List<Degree> degrees = new ArrayList<>();
 
     @Override
     public final boolean equals(Object o) {
