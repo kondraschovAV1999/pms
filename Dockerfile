@@ -12,7 +12,9 @@ COPY app app
 COPY model model
 
 # Ensure Unix line endings for the Maven wrapper script and run Maven install
+
 RUN sed -i 's/\r$//' mvnw
+RUN chmod +x mvnw
 RUN ./mvnw clean install -DskipTests
 
 # Stage 2: Package
