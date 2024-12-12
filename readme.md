@@ -16,5 +16,5 @@ docker-compose down --volumes
 
 To get API documentation you can use either of this
 
-* Swagger http://localhost:8080/pms/api/swagger-ui/index.htm
+* Swagger http://localhost:8080/pms/api/swagger-ui/index.html
 * JSON http://localhost:8080/pms/api/api-docs
