@@ -11,6 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @RestController
 @RequestMapping("/degrees")
+//@CrossOrigin(origins = "*", allowCredentials = "false")
 public class DegreeController {
     private final DegreeService degreeService;
 

@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @RestController
 @RequestMapping
+//@CrossOrigin(origins = "*", allowCredentials = "false")
 public class DutyController {
 
     private final DutyService dutyService;

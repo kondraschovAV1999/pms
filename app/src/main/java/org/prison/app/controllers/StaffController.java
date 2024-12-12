@@ -15,6 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @RestController
 @RequestMapping
+//@CrossOrigin(origins = "*", allowCredentials = "false")
 public class StaffController {
 
     private final StaffService staffService;

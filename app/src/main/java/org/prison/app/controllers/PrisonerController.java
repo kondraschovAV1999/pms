@@ -19,6 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 @RestController
 @RequestMapping
+//@CrossOrigin(origins = "*", allowCredentials = "false")
 public class PrisonerController {
 
     private final PrisonerService prisonerService;
